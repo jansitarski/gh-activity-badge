@@ -15,9 +15,14 @@ import urllib.parse
 import urllib.request
 from typing import Any, cast
 
-from .config import GRAPHQL_API_URL, REST_API_URL, STATS_QUERY, PR_ADDITIONS_QUERY
+from .config import GRAPHQL_API_URL, PR_ADDITIONS_QUERY, REST_API_URL, STATS_QUERY
 
 USER_AGENT = "github-stats-badge-generator"
+
+MAX_RETRIES = 3
+RETRY_BACKOFF_BASE = 2  # seconds; retries at 2s, 4s, 8s
+
+_RETRYABLE_HTTP_CODES = {429, 500, 502, 503, 504}
 
 
 # ---------------------------------------------------------------------------
@@ -25,12 +30,52 @@ USER_AGENT = "github-stats-badge-generator"
 # ---------------------------------------------------------------------------
 
 
-def graphql_request(
-    token: str, query: str, variables: dict[str, object]
-) -> dict[str, object]:
+def _request_with_retry(
+    request: urllib.request.Request,
+    label: str,
+) -> str:
+    """Execute an HTTP request with retry logic for transient failures.
+
+    Retries on 429, 5xx status codes and connection errors, using
+    exponential backoff. Returns the decoded response body.
+    """
+    last_exc: Exception | None = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return response.read().decode("utf-8")
+        except urllib.error.HTTPError as exc:
+            if exc.code not in _RETRYABLE_HTTP_CODES or attempt == MAX_RETRIES - 1:
+                error_body = exc.read().decode("utf-8", errors="replace")
+                raise RuntimeError(f"{label} failed with {exc.code}: {error_body}") from exc
+            last_exc = exc
+            wait = RETRY_BACKOFF_BASE * (2**attempt)
+            print(
+                f"WARNING: {label} returned {exc.code}, retrying in {wait}s "
+                f"(attempt {attempt + 1}/{MAX_RETRIES})",
+                file=sys.stderr,
+            )
+            time.sleep(wait)
+        except (urllib.error.URLError, OSError) as exc:
+            if attempt == MAX_RETRIES - 1:
+                raise RuntimeError(f"{label} failed: {exc}") from exc
+            last_exc = exc
+            wait = RETRY_BACKOFF_BASE * (2**attempt)
+            print(
+                f"WARNING: {label} connection error, retrying in {wait}s "
+                f"(attempt {attempt + 1}/{MAX_RETRIES})",
+                file=sys.stderr,
+            )
+            time.sleep(wait)
+
+    raise RuntimeError(f"{label} failed after {MAX_RETRIES} retries") from last_exc
+
+
+def graphql_request(token: str, query: str, variables: dict[str, object]) -> dict[str, object]:
     """Execute a GraphQL query against the GitHub API.
 
     Raises RuntimeError on HTTP errors, GraphQL errors, or empty responses.
+    Retries automatically on transient failures.
     """
     payload = json.dumps({"query": query, "variables": variables}).encode("utf-8")
     request = urllib.request.Request(
@@ -44,14 +89,7 @@ def graphql_request(
         method="POST",
     )
 
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            body = response.read().decode("utf-8")
-    except urllib.error.HTTPError as exc:
-        error_body = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(
-            f"GitHub GraphQL request failed with {exc.code}: {error_body}"
-        ) from exc
+    body = _request_with_retry(request, "GitHub GraphQL request")
 
     parsed = json.loads(body)
     if parsed.get("errors"):
@@ -68,6 +106,7 @@ def rest_request(token: str, path: str, params: dict[str, str]) -> dict[str, obj
     """Execute a GET request against the GitHub REST API.
 
     Raises RuntimeError on HTTP errors or unexpected response formats.
+    Retries automatically on transient failures.
     """
     query_string = urllib.parse.urlencode(params)
     request = urllib.request.Request(
@@ -80,14 +119,7 @@ def rest_request(token: str, path: str, params: dict[str, str]) -> dict[str, obj
         method="GET",
     )
 
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            body = response.read().decode("utf-8")
-    except urllib.error.HTTPError as exc:
-        error_body = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(
-            f"GitHub REST request failed with {exc.code}: {error_body}"
-        ) from exc
+    body = _request_with_retry(request, f"GitHub REST request ({path})")
 
     parsed = json.loads(body)
     if not isinstance(parsed, dict):
@@ -183,9 +215,7 @@ def collect_metrics(username: str, token: str) -> dict[str, int]:
         "pullRequests.totalCount",
     )
     contributed_repos = require_int(
-        require_dict(
-            user["repositoriesContributedTo"], "repositoriesContributedTo"
-        )["totalCount"],
+        require_dict(user["repositoriesContributedTo"], "repositoriesContributedTo")["totalCount"],
         "repositoriesContributedTo.totalCount",
     )
     print(f"Contributed repos: {contributed_repos}", file=sys.stderr)
@@ -194,9 +224,7 @@ def collect_metrics(username: str, token: str) -> dict[str, int]:
     lines_added = fetch_pr_additions(token, username)
     print(f"Total lines added: {lines_added:,}", file=sys.stderr)
 
-    commits_response = rest_request(
-        token, "/search/commits", {"q": f"author:{username}"}
-    )
+    commits_response = rest_request(token, "/search/commits", {"q": f"author:{username}"})
     total_commits = require_int(
         commits_response.get("total_count"), "rest.search.commits.total_count"
     )
