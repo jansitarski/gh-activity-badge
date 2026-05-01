@@ -6,7 +6,7 @@
 > Generate beautiful, animated SVG badges with your GitHub statistics - including private repository data!
 
 <p align="center">
-  <img src="./assets/demo.svg" alt="Demo badge showing GitHub stats" />
+  <img src="./gh_stats.svg" alt="Demo badge showing GitHub stats" />
 </p>
 
 ## Features
