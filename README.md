@@ -33,6 +33,9 @@ Add the stats markers to your `README.md` where you want the badge to appear:
 
 ```markdown
 <!-- stats:start -->
+<p align="center">
+  <img src="./gh_stats.svg" alt="jansitarski's GitHub Stats" />
+</p>
 <!-- stats:end -->
 ```
 
