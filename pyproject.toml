@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gh-activity-badge"
-version = "1.0.0"
+version = "1.0.1"
 description = "Generate animated SVG badges with GitHub statistics"
 readme = "README.md"
 license = { text = "MIT" }
@@ -20,6 +20,9 @@ gh-activity-badge = "badge.main:run"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+badge = ["templates/*.j2"]
 
 # ---------------------------------------------------------------------------
 # Pytest
