@@ -1,0 +1,56 @@
+name: 'GitHub Stats Badge Generator'
+description: 'Generate beautiful, animated SVG badges with your GitHub statistics including private repo data'
+author: 'Jan Sitarski'
+
+branding:
+  icon: 'activity'
+  color: 'blue'
+
+inputs:
+  username:
+    description: 'GitHub username to generate stats for'
+    required: false
+    default: ${{ github.repository_owner }}
+  github_token:
+    description: 'GitHub token with repo and read:user scopes (required for private repo stats)'
+    required: true
+  output_path:
+    description: 'Path where the SVG badge will be saved'
+    required: false
+    default: 'gh_stats.svg'
+  readme_update:
+    description: 'Whether to automatically update README.md with the badge'
+    required: false
+    default: 'true'
+  readme_path:
+    description: 'Path to the README file to update'
+    required: false
+    default: 'README.md'
+  stats_start_marker:
+    description: 'HTML comment marker indicating where to start the stats injection in README'
+    required: false
+    default: '<!-- stats:start -->'
+  stats_end_marker:
+    description: 'HTML comment marker indicating where to end the stats injection in README'
+    required: false
+    default: '<!-- stats:end -->'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Generate GitHub stats badge
+      shell: bash
+      env:
+        INPUT_USERNAME: ${{ inputs.username }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_OUTPUT_PATH: ${{ inputs.output_path }}
+        INPUT_README_UPDATE: ${{ inputs.readme_update }}
+        INPUT_README_PATH: ${{ inputs.readme_path }}
+        INPUT_STATS_START_MARKER: ${{ inputs.stats_start_marker }}
+        INPUT_STATS_END_MARKER: ${{ inputs.stats_end_marker }}
+      run: python3 ${{ github.action_path }}/src/generate_badge.py

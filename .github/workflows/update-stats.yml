@@ -1,0 +1,43 @@
+name: Update GitHub Stats Badge
+
+on:
+  # Run on a schedule (customize the cron expression)
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+  
+  # Allow manual triggering
+  workflow_dispatch:
+  
+  # Run on push to main (optional, remove if not desired)
+  # push:
+  #   branches: [ main ]
+
+# Required for committing the badge back to the repository
+permissions:
+  contents: write
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Generate stats badge
+        uses: ./  # If using this action from the same repository
+        # For external usage, use: username/github-stats-badge@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # username: ${{ github.repository_owner }}  # Optional: auto-detected
+          # output_path: gh_stats.svg                  # Optional: default shown
+          # readme_update: true                        # Optional: default shown
+          # readme_path: README.md                     # Optional: default shown
+          # stats_start_marker: '<!-- stats:start -->' # Optional: default shown
+          # stats_end_marker: '<!-- stats:end -->'     # Optional: default shown
+      
+      - name: Commit updated stats
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: update GitHub stats badge'
+          file_pattern: 'gh_stats.svg README.md'
