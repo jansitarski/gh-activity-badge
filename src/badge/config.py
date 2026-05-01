@@ -10,7 +10,6 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-
 # ---------------------------------------------------------------------------
 # API Endpoints
 # ---------------------------------------------------------------------------
@@ -22,7 +21,19 @@ REST_API_URL = "https://api.github.com"
 # Project Paths
 # ---------------------------------------------------------------------------
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+
+def _find_repo_root() -> Path:
+    """Walk up from this file to find the repository root (contains action.yml or .git)."""
+    current = Path(__file__).resolve().parent
+    while current != current.parent:
+        if (current / ".git").exists() or (current / "action.yml").exists():
+            return current
+        current = current.parent
+    # Fallback: assume two levels up from this file
+    return Path(__file__).resolve().parents[2]
+
+
+REPO_ROOT = _find_repo_root()
 
 # ---------------------------------------------------------------------------
 # GraphQL Queries
@@ -112,25 +123,18 @@ def load_settings() -> Settings | None:
         )
         return None
 
-    output_path = (
-        os.environ.get("OUTPUT_PATH")
-        or os.environ.get("INPUT_OUTPUT_PATH", "gh_stats.svg")
+    output_path = os.environ.get("OUTPUT_PATH") or os.environ.get(
+        "INPUT_OUTPUT_PATH", "gh_stats.svg"
     )
     readme_update = (
-        os.environ.get("README_UPDATE")
-        or os.environ.get("INPUT_README_UPDATE", "true")
+        os.environ.get("README_UPDATE") or os.environ.get("INPUT_README_UPDATE", "true")
     ).lower() == "true"
-    readme_path = (
-        os.environ.get("README_PATH")
-        or os.environ.get("INPUT_README_PATH", "README.md")
+    readme_path = os.environ.get("README_PATH") or os.environ.get("INPUT_README_PATH", "README.md")
+    start_marker = os.environ.get("STATS_START_MARKER") or os.environ.get(
+        "INPUT_STATS_START_MARKER", "<!-- stats:start -->"
     )
-    start_marker = (
-        os.environ.get("STATS_START_MARKER")
-        or os.environ.get("INPUT_STATS_START_MARKER", "<!-- stats:start -->")
-    )
-    end_marker = (
-        os.environ.get("STATS_END_MARKER")
-        or os.environ.get("INPUT_STATS_END_MARKER", "<!-- stats:end -->")
+    end_marker = os.environ.get("STATS_END_MARKER") or os.environ.get(
+        "INPUT_STATS_END_MARKER", "<!-- stats:end -->"
     )
 
     return Settings(
