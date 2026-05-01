@@ -2,8 +2,8 @@ name: Update GitHub Stats Badge
 
 on:
   # Run on a schedule (customize the cron expression)
-  schedule:
-    - cron: '0 0 * * *'  # Daily at midnight UTC
+  # schedule:
+  #   - cron: '0 0 * * *'  # Daily at midnight UTC
   
   # Allow manual triggering
   workflow_dispatch:
