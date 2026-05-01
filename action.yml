@@ -43,9 +43,9 @@ runs:
       with:
         python-version: '3.11'
     
-    - name: Install dependencies
+    - name: Install package
       shell: bash
-      run: pip install -r ${{ github.action_path }}/requirements.txt
+      run: pip install "${{ github.action_path }}"
 
     - name: Generate GitHub stats badge
       shell: bash
@@ -57,4 +57,4 @@ runs:
         INPUT_README_PATH: ${{ inputs.readme_path }}
         INPUT_STATS_START_MARKER: ${{ inputs.stats_start_marker }}
         INPUT_STATS_END_MARKER: ${{ inputs.stats_end_marker }}
-      run: python3 ${{ github.action_path }}/src/generate_badge.py
+      run: python3 -m badge.main

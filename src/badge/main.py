@@ -38,8 +38,11 @@ def run() -> int:
     print(f"Updated {svg_path}", file=sys.stderr)
 
     # Optionally update README
-    if settings.readme_update:
-        if not update_readme(settings):
-            return 1
+    if settings.readme_update and not update_readme(settings):
+        return 1
 
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(run())

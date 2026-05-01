@@ -34,8 +34,12 @@ _env = Environment(
 
 # Grid positions: 3 columns x 2 rows
 _GRID_POSITIONS = [
-    (0, 0), (148, 0), (296, 0),    # row 1
-    (0, 60), (148, 60), (296, 60),  # row 2
+    (0, 0),
+    (148, 0),
+    (296, 0),  # row 1
+    (0, 60),
+    (148, 60),
+    (296, 60),  # row 2
 ]
 
 # Ordered list of (metric_key, display_label, use_compact_format)
@@ -79,9 +83,7 @@ def render_svg(
     for (x, y), (key, label, compact) in zip(_GRID_POSITIONS, _METRIC_SLOTS):
         raw_value = metrics.get(key, 0)
         formatted = format_compact(raw_value) if compact else format_number(raw_value)
-        metric_cells.append(
-            {"x": x, "y": y, "value": Markup(formatted), "label": Markup(label)}
-        )
+        metric_cells.append({"x": x, "y": y, "value": Markup(formatted), "label": Markup(label)})
 
     return template.render(
         username=username,
