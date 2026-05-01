@@ -52,7 +52,7 @@ Feature requests are welcome! Please create an issue with:
    # Test locally
    export GITHUB_USERNAME="testuser"
    export GITHUB_TOKEN="your-token"
-   python3 src/generate_badge.py
+   python3 -m badge.main
    ```
 
 5. **Commit your changes**
@@ -98,10 +98,10 @@ cd github-stats-badge
 export GITHUB_USERNAME="your-test-username"
 export GITHUB_TOKEN="your-pat"
 
-# Make changes to src/generate_badge.py
+# Make changes to source files in src/badge/
 
 # Test
-python3 src/generate_badge.py
+python3 -m badge.main
 
 # Check output
 ls -la gh_stats.svg
@@ -113,14 +113,14 @@ Before submitting a PR:
 
 1. **Test basic functionality**
    ```bash
-   python3 src/generate_badge.py
+   python3 -m badge.main
    ```
 
 2. **Test with different configurations**
    ```bash
    export OUTPUT_PATH="test/badge.svg"
    export README_UPDATE="false"
-   python3 src/generate_badge.py
+   python3 -m badge.main
    ```
 
 3. **Verify no personal data leaked**
@@ -131,7 +131,7 @@ Before submitting a PR:
 
 4. **Check Python syntax**
    ```bash
-   python3 -m py_compile src/generate_badge.py
+   python3 -m py_compile src/badge/*.py
    ```
 
 ## Code Style

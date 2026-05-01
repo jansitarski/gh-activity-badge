@@ -212,8 +212,8 @@ You can run the script locally or on self-hosted runners:
 git clone https://github.com/jansitarski/github-stats-badge.git
 cd github-stats-badge
 
-# Install dependencies
-pip install -r requirements.txt
+# Install the package
+pip install -e .
 
 # Set environment variables
 export GITHUB_USERNAME="your-username"
@@ -221,7 +221,7 @@ export GITHUB_TOKEN="your-personal-access-token"
 export OUTPUT_PATH="gh_stats.svg"
 
 # Run the script
-python3 src/generate_badge.py
+python3 -m badge.main
 ```
 
 See [examples/self-hosted/](./examples/self-hosted/) for full example.
@@ -287,10 +287,10 @@ git clone https://github.com/jansitarski/github-stats-badge.git
 cd github-stats-badge
 
 # Run locally for testing
-    pip install -r requirements.txt
-    export GITHUB_USERNAME="testuser"
-    export GITHUB_TOKEN="your-token"
-    python3 src/generate_badge.py
+pip install -e ".[dev]"
+export GITHUB_USERNAME="testuser"
+export GITHUB_TOKEN="your-token"
+python3 -m badge.main
 ```
 
 ## License
