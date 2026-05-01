@@ -8,6 +8,7 @@ all required user metrics.
 from __future__ import annotations
 
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -23,6 +24,13 @@ MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2  # seconds; retries at 2s, 4s, 8s
 
 _RETRYABLE_HTTP_CODES = {429, 500, 502, 503, 504}
+
+_TOKEN_PATTERN = re.compile(r"(gh[ps]_[A-Za-z0-9_]{36,}|github_pat_[A-Za-z0-9_]{22,}|[A-Za-z0-9_]{40})")
+
+
+def _sanitize_error(message: str) -> str:
+    """Redact potential tokens/secrets from error messages."""
+    return _TOKEN_PATTERN.sub("***REDACTED***", message)
 
 
 # ---------------------------------------------------------------------------
@@ -48,7 +56,7 @@ def _request_with_retry(
         except urllib.error.HTTPError as exc:
             if exc.code not in _RETRYABLE_HTTP_CODES or attempt == MAX_RETRIES - 1:
                 error_body = exc.read().decode("utf-8", errors="replace")
-                raise RuntimeError(f"{label} failed with {exc.code}: {error_body}") from exc
+                raise RuntimeError(f"{label} failed with {exc.code}: {_sanitize_error(error_body)}") from exc
             last_exc = exc
             wait = RETRY_BACKOFF_BASE * (2**attempt)
             print(
@@ -59,7 +67,7 @@ def _request_with_retry(
             time.sleep(wait)
         except (urllib.error.URLError, OSError) as exc:
             if attempt == MAX_RETRIES - 1:
-                raise RuntimeError(f"{label} failed: {exc}") from exc
+                raise RuntimeError(f"{label} failed: {_sanitize_error(str(exc))}") from exc
             last_exc = exc
             wait = RETRY_BACKOFF_BASE * (2**attempt)
             print(
@@ -94,11 +102,11 @@ def graphql_request(token: str, query: str, variables: dict[str, object]) -> dic
 
     parsed = json.loads(body)
     if parsed.get("errors"):
-        raise RuntimeError(json.dumps(parsed["errors"], indent=2))
+        raise RuntimeError(_sanitize_error(json.dumps(parsed["errors"], indent=2)))
 
     data = parsed.get("data")
     if not data:
-        raise RuntimeError(f"No data returned from GitHub GraphQL API: {body}")
+        raise RuntimeError(f"No data returned from GitHub GraphQL API: {_sanitize_error(body)}")
 
     return cast(dict[str, object], data)
 
