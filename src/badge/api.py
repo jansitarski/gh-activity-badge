@@ -25,7 +25,9 @@ RETRY_BACKOFF_BASE = 2  # seconds; retries at 2s, 4s, 8s
 
 _RETRYABLE_HTTP_CODES = {429, 500, 502, 503, 504}
 
-_TOKEN_PATTERN = re.compile(r"(gh[ps]_[A-Za-z0-9_]{36,}|github_pat_[A-Za-z0-9_]{22,}|[A-Za-z0-9_]{40})")
+_TOKEN_PATTERN = re.compile(
+    r"(gh[ps]_[A-Za-z0-9_]{36,}|github_pat_[A-Za-z0-9_]{22,}|[A-Za-z0-9_]{40})"
+)
 
 
 def _sanitize_error(message: str) -> str:
@@ -56,7 +58,9 @@ def _request_with_retry(
         except urllib.error.HTTPError as exc:
             if exc.code not in _RETRYABLE_HTTP_CODES or attempt == MAX_RETRIES - 1:
                 error_body = exc.read().decode("utf-8", errors="replace")
-                raise RuntimeError(f"{label} failed with {exc.code}: {_sanitize_error(error_body)}") from exc
+                raise RuntimeError(
+                    f"{label} failed with {exc.code}: {_sanitize_error(error_body)}"
+                ) from exc
             last_exc = exc
             wait = RETRY_BACKOFF_BASE * (2**attempt)
             print(
