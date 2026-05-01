@@ -43,7 +43,8 @@ def _request_with_retry(
     for attempt in range(MAX_RETRIES):
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
-                return response.read().decode("utf-8")
+                body: bytes = response.read()
+                return body.decode("utf-8")
         except urllib.error.HTTPError as exc:
             if exc.code not in _RETRYABLE_HTTP_CODES or attempt == MAX_RETRIES - 1:
                 error_body = exc.read().decode("utf-8", errors="replace")
@@ -151,16 +152,27 @@ def require_int(value: object, path: str) -> int:
 # ---------------------------------------------------------------------------
 
 
-def fetch_pr_additions(token: str, username: str, max_pages: int = 100) -> int:
+def fetch_pr_additions(
+    token: str, username: str, max_pages: int = 100, timeout: float = 300
+) -> int:
     """Sum the total lines added across all merged pull requests.
 
     Paginates through up to `max_pages` pages of 100 PRs each,
     with a brief pause every 10 pages to respect rate limits.
+    Stops if `timeout` seconds have elapsed since the call started.
     """
     total = 0
     cursor: str | None = None
+    start_time = time.monotonic()
 
     for page_num in range(max_pages):
+        if time.monotonic() - start_time > timeout:
+            print(
+                f"WARNING: fetch_pr_additions timed out after {timeout}s, results may be incomplete.",
+                file=sys.stderr,
+            )
+            break
+
         variables: dict[str, object] = {"login": username, "cursor": cursor}
         data = graphql_request(token, PR_ADDITIONS_QUERY, variables)
 
