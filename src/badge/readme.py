@@ -20,7 +20,10 @@ def resolve_safe_path(relative_path: str, label: str) -> Path | None:
     escapes the repository root.
     """
     resolved = (REPO_ROOT / relative_path).resolve()
-    if not str(resolved).startswith(str(REPO_ROOT.resolve())):
+    repo_root_resolved = REPO_ROOT.resolve()
+    try:
+        resolved.relative_to(repo_root_resolved)
+    except ValueError:
         print(f"ERROR: {label} escapes repository root: {relative_path}", file=sys.stderr)
         return None
     return resolved
@@ -71,9 +74,7 @@ def update_readme(settings: Settings) -> bool:
     )
 
     new_content = (
-        content[:start_index]
-        + injection
-        + content[end_index + len(settings.end_marker):]
+        content[:start_index] + injection + content[end_index + len(settings.end_marker) :]
     )
 
     readme_path.write_text(new_content, encoding="utf-8")
