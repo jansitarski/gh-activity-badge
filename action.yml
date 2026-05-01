@@ -43,6 +43,10 @@ runs:
       with:
         python-version: '3.11'
     
+    - name: Install dependencies
+      shell: bash
+      run: pip install -r ${{ github.action_path }}/requirements.txt
+
     - name: Generate GitHub stats badge
       shell: bash
       env:
