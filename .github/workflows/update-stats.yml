@@ -28,7 +28,7 @@ jobs:
         uses: ./  # If using this action from the same repository
         # For external usage, use: username/github-stats-badge@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.PROFILE_STATS_TOKEN }}
           # username: ${{ github.repository_owner }}  # Optional: auto-detected
           # output_path: gh_stats.svg                  # Optional: default shown
           # readme_update: true                        # Optional: default shown
