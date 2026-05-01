@@ -14,7 +14,7 @@
 - **Beautiful Design**: Modern, animated SVG with smooth entrance effects
 - **Dark/Light Mode**: Automatically adapts to user's system preferences
 - **Private Repo Support**: Include statistics from your private repositories
-- **No Dependencies**: Pure Python standard library - no external packages required
+- **Minimal Dependencies**: Only requires [Jinja2](https://jinja.palletsprojects.com/) for SVG template rendering
 - **6 Key Metrics**:
   - 📦 Public Repositories
   - 🔒 Private Repositories  
@@ -212,6 +212,9 @@ You can run the script locally or on self-hosted runners:
 git clone https://github.com/jansitarski/github-stats-badge.git
 cd github-stats-badge
 
+# Install dependencies
+pip install -r requirements.txt
+
 # Set environment variables
 export GITHUB_USERNAME="your-username"
 export GITHUB_TOKEN="your-personal-access-token"
@@ -225,7 +228,7 @@ See [examples/self-hosted/](./examples/self-hosted/) for full example.
 
 ## Requirements
 
-- **Python**: 3.8 or higher (uses standard library only - no pip install needed!)
+- **Python**: 3.8 or higher (requires Jinja2 — installed automatically in GitHub Actions)
 - **GitHub Token**: With `repo` and `read:user` scopes for private repo access
 - **Permissions**: Workflow needs `contents: write` to commit badge back to repo
 
@@ -284,9 +287,10 @@ git clone https://github.com/jansitarski/github-stats-badge.git
 cd github-stats-badge
 
 # Run locally for testing
-export GITHUB_USERNAME="testuser"
-export GITHUB_TOKEN="your-token"
-python3 src/generate_badge.py
+    pip install -r requirements.txt
+    export GITHUB_USERNAME="testuser"
+    export GITHUB_TOKEN="your-token"
+    python3 src/generate_badge.py
 ```
 
 ## License
@@ -296,7 +300,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Inspired by various GitHub profile badge generators
-- Built with Python standard library only
+- Built with Python and Jinja2
 - Uses GitHub's GraphQL and REST APIs
 
 ## Support
