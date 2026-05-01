@@ -23,14 +23,27 @@ REST_API_URL = "https://api.github.com"
 
 
 def _find_repo_root() -> Path:
-    """Walk up from this file to find the repository root (contains action.yml or .git)."""
-    current = Path(__file__).resolve().parent
+    """Return the repository / workspace root.
+
+    Prefers the GITHUB_WORKSPACE environment variable (always set inside
+    GitHub Actions) so that the path is correct even when the package is
+    pip-installed into site-packages.  Falls back to walking up from the
+    current working directory, then from this source file.
+    """
+    # 1. Explicit env var (GitHub Actions always sets this)
+    env_root = os.environ.get("GITHUB_WORKSPACE")
+    if env_root:
+        return Path(env_root)
+
+    # 2. Walk up from cwd (works for local invocations)
+    current = Path.cwd().resolve()
     while current != current.parent:
         if (current / ".git").exists() or (current / "action.yml").exists():
             return current
         current = current.parent
-    # Fallback: assume two levels up from this file
-    return Path(__file__).resolve().parents[2]
+
+    # 3. Fallback to cwd itself
+    return Path.cwd().resolve()
 
 
 REPO_ROOT = _find_repo_root()
