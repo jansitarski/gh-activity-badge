@@ -27,6 +27,7 @@ Thumbs.db
 # Generated files
 gh_stats.svg
 *.svg
+!assets/demo.svg
 
 # Logs
 *.log
