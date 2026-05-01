@@ -28,7 +28,6 @@ Thumbs.db
 # Note: gh_stats.svg is committed to allow GitHub Action to update it
 *.svg
 !gh_stats.svg
-!assets/*.svg
 
 # Logs
 *.log
