@@ -1,7 +1,7 @@
 # GitHub Stats Badge Generator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Release](https://img.shields.io/github/v/release/jansitarski/github-stats-badge)](https://github.com/jansitarski/github-stats-badge/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/jansitarski/gh-activity-badge)](https://github.com/jansitarski/gh-activity-badge/releases)
 
 > Generate beautiful, animated SVG badges with your GitHub statistics - including private repository data!
 
@@ -63,7 +63,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Generate stats badge
-        uses: jansitarski/github-stats-badge@v1
+        uses: jansitarski/gh-activity-badge@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       
@@ -117,7 +117,7 @@ That's it! Your badge will be generated and automatically updated.
 
 ```yaml
 - name: Generate stats badge
-  uses: jansitarski/github-stats-badge@v1
+  uses: jansitarski/gh-activity-badge@v1
   with:
     github_token: ${{ secrets.STATS_TOKEN }}
     username: octocat
@@ -171,7 +171,7 @@ Save the badge to a specific folder:
 
 ```yaml
 - name: Generate stats badge
-  uses: jansitarski/github-stats-badge@v1
+  uses: jansitarski/gh-activity-badge@v1
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     output_path: assets/stats.svg
@@ -190,7 +190,7 @@ Disable automatic README updates and place the badge manually:
 
 ```yaml
 - name: Generate stats badge
-  uses: jansitarski/github-stats-badge@v1
+  uses: jansitarski/gh-activity-badge@v1
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     readme_update: 'false'
@@ -209,8 +209,8 @@ You can run the script locally or on self-hosted runners:
 
 ```bash
 # Clone the repository
-git clone https://github.com/jansitarski/github-stats-badge.git
-cd github-stats-badge
+git clone https://github.com/jansitarski/gh-activity-badge.git
+cd gh-activity-badge
 
 # Install the package
 pip install -e .
@@ -283,8 +283,8 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 ### Development Setup
 
 ```bash
-git clone https://github.com/jansitarski/github-stats-badge.git
-cd github-stats-badge
+git clone https://github.com/jansitarski/gh-activity-badge.git
+cd gh-activity-badge
 
 # Run locally for testing
 pip install -e ".[dev]"
